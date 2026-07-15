@@ -216,10 +216,10 @@ def test_connect_execs_remote_mcp_when_sessiond_is_inactive(config: Config) -> N
     assert "PYTHONPATH" in script
     assert "Join-Path $current.path 'src'" in script
     assert "PYTHONDONTWRITEBYTECODE" in script
-    assert " -B -m " in script
+    assert " -B -c $mcpBootstrap" in script
 
 
-def test_connect_rejects_non_default_port(config: Config) -> None:
+def test_connect_configures_non_default_port(config: Config) -> None:
     changed = Config(
         path=config.path,
         local=config.local,
@@ -231,9 +231,16 @@ def test_connect_rejects_non_default_port(config: Config) -> None:
             port=7002,
         ),
         sessiond=config.sessiond,
+        windows=config.windows,
     )
-    with pytest.raises(MayaDevError, match="7001"):
-        connect(changed, FakeRunner([]))
+    runner = FakeRunner([], exec_code=0)
+
+    assert connect(changed, runner) == 0
+    script = decode_ssh_script(runner.exec_calls[0])
+    assert "Global\\mac_maya_dev_command_port_7002" in script
+    assert "$env:MAYA_MCP_PORT = '7002'" in script
+    assert "get_client().reconfigure" in script
+    assert "runpy.run_module" in script
 
 
 def test_session_commands_use_configured_paths(config: Config) -> None:

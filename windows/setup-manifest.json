@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "python": {
+    "version": "3.11.9",
+    "architecture": "AMD64",
+    "bits": 64,
+    "url": "https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe",
+    "sha256": "5ee42c4eee1e6b4464bb23722f90b45303f79442df63083f05322f1785f5fdde"
+  },
+  "mcp_lock": {
+    "file": "mcp-requirements-py311.lock",
+    "sha256": "cf87cef92c3bb7decbc8abd341731756d9dd8df38183a390dd90c32b18ebe47a",
+    "source_commit": "cf89b9907a95fade4ac49ebabc17bac1cdfda550"
+  },
+  "launcher": {
+    "file": "start-sessiond-maya2024.ps1",
+    "sha256": "8740dcb68f9248a43c2f08edf080acba41fbf00f04f6abc56dac7cc3da864d48"
+  }
+}

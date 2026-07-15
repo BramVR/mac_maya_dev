@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -17,11 +18,27 @@ def test_parser_accepts_call_inputs() -> None:
     assert args.pairs == ["type=transform"]
 
 
+def test_parser_accepts_windows_setup_apply() -> None:
+    args = build_parser().parse_args(["--json", "windows", "setup", "--apply"])
+    assert args.json is True
+    assert args.command == "windows"
+    assert args.windows_command == "setup"
+    assert args.apply is True
+
+
 def test_main_reports_missing_config(tmp_path: Path, capsys: object) -> None:
     code = main(["--config", str(tmp_path / "missing.toml"), "doctor"])
     assert code == 1
     captured = capsys.readouterr()  # type: ignore[attr-defined]
     assert "Config not found" in captured.err
+
+
+def test_main_reports_json_error(tmp_path: Path, capsys: object) -> None:
+    code = main(["--json", "--config", str(tmp_path / "missing.toml"), "windows", "check"])
+    assert code == 1
+    captured = capsys.readouterr()  # type: ignore[attr-defined]
+    assert json.loads(captured.out)["ok"] is False
+    assert captured.err == ""
 
 
 @pytest.mark.parametrize(
@@ -40,6 +57,8 @@ def test_main_reports_missing_config(tmp_path: Path, capsys: object) -> None:
         ("start", "session_start", {"ok": True}, 0),
         ("stop", "session_stop", {"ok": True}, 0),
         ("restart", "session_restart", {"ok": True}, 0),
+        ("windows check", "windows_check", {"ok": True}, 0),
+        ("windows setup", "windows_setup", {"ok": True}, 0),
         ("call scene.info", "session_call", {"ok": False}, 1),
     ],
 )

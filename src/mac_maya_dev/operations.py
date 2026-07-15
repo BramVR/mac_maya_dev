@@ -450,10 +450,6 @@ if ($active) {{
 
 def connect(config: Config, runner: Runner) -> int:
     """Run the selected Windows deployment as a stdio MCP server over SSH."""
-    if config.remote.port != 7001:
-        raise MayaDevError(
-            "Direct GG_MayaMCP currently uses commandPort 7001; use port 7001 or sessiond calls"
-        )
     script = "$ErrorActionPreference = 'Stop'\n"
     script += _mode_mutex_open(config)
     script += _sessiond_inactive_guard(config) + "\n"
@@ -461,10 +457,20 @@ def connect(config: Config, runner: Runner) -> int:
 $sourcePath = Join-Path $current.path 'src'
 $env:PYTHONPATH = "$sourcePath;$($current.path);$env:PYTHONPATH"
 $env:MAYA_MCP_PORT = {powershell_literal(str(config.remote.port))}
+$env:MAYA_MCP_MODULE = {powershell_literal(config.remote.mcp_module)}
 $env:PYTHONUNBUFFERED = '1'
 $env:PYTHONDONTWRITEBYTECODE = '1'
 Set-Location -LiteralPath $current.path
-& {powershell_literal(config.remote.python)} -B -m {powershell_literal(config.remote.mcp_module)}
+$mcpBootstrap = @'
+import os
+import runpy
+
+from maya_mcp.transport import get_client
+
+get_client().reconfigure(port=int(os.environ["MAYA_MCP_PORT"]))
+runpy.run_module(os.environ["MAYA_MCP_MODULE"], run_name="__main__", alter_sys=True)
+'@
+& {powershell_literal(config.remote.python)} -B -c $mcpBootstrap
 $commandExitCode = $LASTEXITCODE
 """
     script += _mode_mutex_close()

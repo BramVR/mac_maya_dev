@@ -32,8 +32,10 @@ if (-not (Test-Path -LiteralPath $current.path -PathType Container)) {
 }
 
 $env:PYTHONDONTWRITEBYTECODE = "1"
+$env:PYTHONNOUSERSITE = "1"
+Remove-Item Env:PYTHONHOME, Env:PYTHONPATH -ErrorAction SilentlyContinue
 
-& $SessiondPython -m $SessiondModule start `
+& $SessiondPython -I -B -m $SessiondModule start `
     --python-exe $SessiondPython `
     --state-dir $StateDir `
     --maya-exe $MayaExe `

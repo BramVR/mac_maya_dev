@@ -9,9 +9,9 @@ check_commands = [
 [remote]
 ssh_host = "maya-win"
 deploy_root = "C:/maya-mcp-dev"
-python = "C:/maya-dev/python311/python.exe"
+python = "C:/maya-dev/mcp-venv311/Scripts/python.exe"
 mcp_module = "maya_mcp.server"
-port = 7001
+port = 7002
 
 [sessiond]
 python = "C:/maya-stall/sessiond-venv311/Scripts/python.exe"
@@ -20,3 +20,11 @@ maya_exe = "C:/Program Files/Autodesk/Maya2024/bin/maya.exe"
 module = "gg_maya_sessiond.cli"
 interactive_task = "MayaDevSessiond2024"
 wait_timeout_seconds = 180
+reuse_existing = true
+
+[windows]
+setup_root = "C:/maya-dev"
+python_install_dir = "C:/maya-dev/cpython-3.11.9"
+mcp_venv_dir = "C:/maya-dev/mcp-venv311"
+launcher = "C:/maya-dev/start-sessiond-maya2024.ps1"
+interactive_user = "DESKTOP-NAME\\maya-user"

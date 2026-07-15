@@ -6,6 +6,7 @@ import base64
 import json
 import subprocess
 import sys
+import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, TextIO
@@ -88,6 +89,16 @@ def ssh_args(host: str, script: str, *, tty: bool = False) -> list[str]:
 
 def run_powershell(runner: Runner, host: str, script: str) -> Result:
     return runner.run(ssh_args(host, script))
+
+
+def run_powershell_with_stdin(
+    runner: Runner, host: str, script: str, stdin_text: str
+) -> Result:
+    """Run a small encoded bootstrap with a larger data payload on stdin."""
+    with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as handle:
+        handle.write(stdin_text)
+        handle.seek(0)
+        return runner.run(ssh_args(host, script), stdin=handle)
 
 
 def parse_last_json_object(output: str, *, action: str) -> dict[str, Any]:

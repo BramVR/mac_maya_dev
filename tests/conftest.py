@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from mac_maya_dev.config import Config, LocalConfig, RemoteConfig, SessiondConfig
+from mac_maya_dev.config import Config, LocalConfig, RemoteConfig, SessiondConfig, WindowsConfig
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ def config(source_repo: Path, tmp_path: Path) -> Config:
         remote=RemoteConfig(
             ssh_host="maya-win",
             deploy_root="C:/maya-mcp-dev",
-            python="C:/Python311/python.exe",
+            python="C:/maya-dev/mcp-venv311/Scripts/python.exe",
             mcp_module="maya_mcp.server",
             port=7001,
         ),
@@ -47,5 +47,13 @@ def config(source_repo: Path, tmp_path: Path) -> Config:
             module="gg_maya_sessiond.cli",
             interactive_task="MayaDevSessiond2024",
             wait_timeout_seconds=180,
+            reuse_existing=True,
+        ),
+        windows=WindowsConfig(
+            setup_root="C:/maya-dev",
+            python_install_dir="C:/maya-dev/cpython-3.11.9",
+            mcp_venv_dir="C:/maya-dev/mcp-venv311",
+            launcher="C:/maya-dev/start-sessiond-maya2024.ps1",
+            interactive_user="DESKTOP-NAME\\maya-user",
         ),
     )

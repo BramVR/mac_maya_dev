@@ -34,6 +34,9 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/mac_maya_dev"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"windows" = "mac_maya_dev/windows"
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

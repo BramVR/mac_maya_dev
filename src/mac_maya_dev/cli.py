@@ -22,6 +22,7 @@ from .operations import (
     session_stop,
 )
 from .remote import Runner, emit
+from .windows import windows_check, windows_setup
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -42,6 +43,16 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("start", help="Cold-start Maya and MCP through sessiond")
     sub.add_parser("stop", help="Stop the sessiond-managed Maya session")
     sub.add_parser("restart", help="Cold-restart the sessiond-managed Maya session")
+
+    windows = sub.add_parser("windows", help="Inspect or prepare the configured Windows host")
+    windows_sub = windows.add_subparsers(dest="windows_command", required=True)
+    windows_sub.add_parser("check", help="Read-only Windows prerequisite and configuration report")
+    windows_setup_parser = windows_sub.add_parser(
+        "setup", help="Preview or apply idempotent Windows host preparation"
+    )
+    windows_setup_parser.add_argument(
+        "--apply", action="store_true", help="Apply the plan; default is read-only dry-run"
+    )
 
     call = sub.add_parser("call", help="Call a tool through the sessiond worker")
     call.add_argument("tool", nargs="?")
@@ -76,6 +87,12 @@ def _run(args: argparse.Namespace, runner: Runner) -> tuple[int, Any | None]:
         return (0 if payload.get("ok") else 1), payload
     if args.command == "restart":
         payload = session_restart(config, runner)
+        return (0 if payload.get("ok") else 1), payload
+    if args.command == "windows" and args.windows_command == "check":
+        payload = windows_check(config, runner)
+        return (0 if payload.get("ok") else 1), payload
+    if args.command == "windows" and args.windows_command == "setup":
+        payload = windows_setup(config, runner, apply=args.apply)
         return (0 if payload.get("ok") else 1), payload
     if args.command == "call":
         payload = session_call(
