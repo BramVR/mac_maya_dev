@@ -1,0 +1,22 @@
+[local]
+source = "/Users/bram/Projects/oss/GG_MayaMCP"
+check_commands = [
+  ["uv", "run", "ruff", "check", "."],
+  ["uv", "run", "mypy", "src"],
+  ["uv", "run", "pytest", "-q"],
+]
+
+[remote]
+ssh_host = "maya-win"
+deploy_root = "C:/maya-mcp-dev"
+python = "C:/maya-dev/python311/python.exe"
+mcp_module = "maya_mcp.server"
+port = 7001
+
+[sessiond]
+python = "C:/maya-stall/sessiond-venv311/Scripts/python.exe"
+state_dir = "C:/maya-stall/sessiond-maya2024"
+maya_exe = "C:/Program Files/Autodesk/Maya2024/bin/maya.exe"
+module = "gg_maya_sessiond.cli"
+interactive_task = "MayaDevSessiond2024"
+wait_timeout_seconds = 180

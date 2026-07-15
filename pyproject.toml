@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mac-maya-dev"
+version = "0.1.0"
+description = "Fast Mac-to-Windows development loop for GG_MayaMCP"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Bram Van Rompuy", email = "bram.van.rompuy@gmail.com" }]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+[project.scripts]
+maya-dev = "mac_maya_dev.cli:main"
+
+[dependency-groups]
+dev = [
+  "mypy>=1.15",
+  "pytest>=8.3",
+  "pytest-cov>=6.0",
+  "ruff>=0.11",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mac_maya_dev"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/mac_maya_dev/operations.py" = ["E501"] # Keep embedded PowerShell readable.
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["mac_maya_dev"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=mac_maya_dev --cov-report=term-missing --cov-fail-under=85"
+testpaths = ["tests"]
