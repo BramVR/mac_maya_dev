@@ -343,8 +343,8 @@ New-Item -ItemType Directory -Path $stage | Out-Null
 $bundle = Join-Path $stage {powershell_literal(filename)}
 [ordered]@{{
     ok=$true
-    stage=$stage.Replace('\', '/')
-    bundle=$bundle.Replace('\', '/')
+    stage=$stage.Replace([char]92, [char]47)
+    bundle=$bundle.Replace([char]92, [char]47)
 }} | ConvertTo-Json -Compress
 """.strip()
     return parse_json_result(

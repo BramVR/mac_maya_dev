@@ -14,6 +14,7 @@ from mac_maya_dev.remote import Result, Runner
 from mac_maya_dev.windows import (
     _asset_text,
     _locked_packages,
+    _prepare_remote_stage,
     task_command,
     windows_check,
     windows_setup,
@@ -119,15 +120,30 @@ def test_windows_check_uses_one_read_only_encoded_stdin_call(config: Config) -> 
     assert "Register-ScheduledTask" not in script
     assert "Invoke-WebRequest" not in script
     assert "trigger_count" in script
+    assert "$task.Triggers | Where-Object { $_ }" in script
     assert 'RunLevel -eq "Limited"' in script
     assert "WorkingDirectory" in script
     assert "Settings.Enabled" in script
     assert "MultipleInstances" in script
     assert "ExecutionTimeLimit" in script
     assert "importlib.metadata" in script
+    assert "$inventoryCode | & $Python" in script
     assert ".maya-dev-requirements.lock" in script
     assert "Remove-Item Env:PYTHONHOME, Env:PYTHONPATH" in script
     assert "-I -B" in script
+
+
+def test_prepare_remote_stage_preserves_backslash_replacement(config: Config) -> None:
+    runner = FakeRunner(
+        [result({"ok": True, "stage": "C:/stage", "bundle": "C:/stage/setup.zip"})]
+    )
+
+    payload = _prepare_remote_stage(config, runner, "setup.zip")
+
+    assert payload["stage"] == "C:/stage"
+    script = decode_ssh_script(runner.calls[0])
+    assert "Replace([char]92, [char]47)" in script
+    assert "Replace('', '/')" not in script
 
 
 def test_windows_setup_defaults_to_write_free_plan(config: Config) -> None:
@@ -303,6 +319,10 @@ def test_windows_setup_apply_uploads_then_verifies(config: Config) -> None:
 def test_setup_builds_windows_venv_at_final_path_with_backup_rollback() -> None:
     script = _asset_text("setup-maya2024.ps1")
 
+    assert "$PythonInstallDir.TrimEnd([char[]](47, 92)).Replace([char]47, [char]92)" in script
+    assert 'TargetDir=`"$pythonInstallerTarget`"' in script
+    assert "$inventoryCode | & $Python" in script
+    assert "$task.Triggers | Where-Object { $_ }" in script
     assert "-m venv $McpVenvDir" in script
     assert ".staging-" not in script
     assert "[System.IO.Directory]::Move($McpVenvDir, $backupVenv)" in script

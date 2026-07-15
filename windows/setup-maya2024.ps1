@@ -60,7 +60,7 @@ packages = {
 }
 print(json.dumps(packages, sort_keys=True))
 '@
-    $text = (& $Python -I -B -c $inventoryCode 2>&1 | Out-String).Trim()
+    $text = ($inventoryCode | & $Python -I -B -c "exec(__import__('sys').stdin.read())" 2>&1 | Out-String).Trim()
     if ($LASTEXITCODE -ne 0) { return $null }
     try { return $text | ConvertFrom-Json } catch { return $null }
 }
@@ -181,10 +181,11 @@ try {
             if ($installerHash -ne [string]$manifest.python.sha256) {
                 throw "Downloaded Python installer checksum mismatch."
             }
+            $pythonInstallerTarget = $PythonInstallDir.TrimEnd([char[]](47, 92)).Replace([char]47, [char]92)
             $installerArgs = @(
                 "/quiet",
                 "InstallAllUsers=0",
-                "TargetDir=`"$PythonInstallDir`"",
+                "TargetDir=`"$pythonInstallerTarget`"",
                 "Include_pip=1",
                 "Include_launcher=0",
                 "Include_test=0",
@@ -292,7 +293,7 @@ try {
     $taskMatches = $false
     if ($task) {
         $actions = @($task.Actions)
-        $triggers = @($task.Triggers)
+        $triggers = @($task.Triggers | Where-Object { $_ })
         $userMatches = $task.Principal.UserId -ieq $InteractiveUser -or $task.Principal.UserId -ieq ($InteractiveUser -split "\\")[-1]
         $taskMatches = $actions.Count -eq 1 -and $userMatches -and `
             $triggers.Count -eq 0 -and `

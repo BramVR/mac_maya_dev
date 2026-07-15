@@ -71,7 +71,7 @@ packages = {
 }
 print(json.dumps(packages, sort_keys=True))
 '@
-    $text = (& $Python -I -B -c $inventoryCode 2>&1 | Out-String).Trim()
+    $text = ($inventoryCode | & $Python -I -B -c "exec(__import__('sys').stdin.read())" 2>&1 | Out-String).Trim()
     if ($LASTEXITCODE -ne 0) { return $null }
     try { return $text | ConvertFrom-Json } catch { return $null }
 }
@@ -289,7 +289,7 @@ $taskActual = $null
 $taskOk = $false
 if ($task) {
     $actions = @($task.Actions)
-    $triggers = @($task.Triggers)
+    $triggers = @($task.Triggers | Where-Object { $_ })
     $taskActual = [ordered]@{
         user = [string]$task.Principal.UserId
         logon_type = [string]$task.Principal.LogonType
